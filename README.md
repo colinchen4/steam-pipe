@@ -1,163 +1,400 @@
-# SteamPipe: Revolutionizing CS2 Skin Trading
+# 🎮 SteamPipe: AI-Powered CS2 Skin Trading Platform
 
-## License
-© 2024 SteamPipe. All Rights Reserved.
+<div align="center">
+  <strong>Revolutionizing CS2 Skin Trading with AI and Solana</strong>
+</div>
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Core Objectives](#core-objectives)
-3. [Key Features](#key-features)
-4. [Technical Architecture](#technical-architecture)
-5. [Security Measures](#security-measures)
-6. [Business Model](#business-model)
-7. [Roadmap](#roadmap)
-8. [Risk Management](#risk-management)
-9. [Getting Started](#getting-started)
-10. [Contributing](#contributing)
-11. [Contact](#contact)
-12. [Conclusion](#conclusion)
+## 🚀 Overview
 
-## 1. Introduction
+SteamPipe revolutionizes CS2 skin trading by combining AI-powered price analysis with Solana's high-performance blockchain. Our platform seamlessly integrates Steam's trading system with decentralized finance, providing a secure, efficient, and intelligent trading experience.
 
-SteamPipe is a groundbreaking platform designed to transform the CS2 (Counter-Strike 2) skin trading ecosystem. By leveraging the power of blockchain technology, specifically the Solana network, we aim to provide a secure, transparent, and efficient marketplace for gamers and traders alike.
+## 🔥 Core Innovation
 
-### Background
-The current CS2 skin trading landscape faces numerous challenges:
-- High transaction fees
-- Slow processing times
-- Vulnerability to fraud and scams
+Unlike traditional CS2 trading platforms, SteamPipe leverages:
+- AI-driven price recommendations using the iFlow API
+- Solana's high-speed, low-cost blockchain for settlements
+- Multi-layer escrow system for secure trades
+- Automated trade execution and verification
 
-SteamPipe addresses these issues head-on, offering a Web3 solution that bridges the gap between traditional gaming and blockchain technology.
+## 🏗️ System Architecture
 
-## 2. Core Objectives
+```mermaid
+graph TD
+    subgraph "User Interface Layer"
+        A[Discord Bot] --> B[User Interaction Service]
+        C[Web API] --> B
+    end
 
-1. **Enhanced Security and Transparency**: Utilize Solana's blockchain to ensure all transactions are secure, verifiable, and resistant to fraud.
-2. **User-Centric Design**: Deliver an intuitive interface that simplifies the trading process for both crypto-savvy users and newcomers.
-3. **Cost Efficiency**: Leverage Solana's low-cost infrastructure to minimize transaction fees.
-4. **Efficient Trading**: Implement a robust order book and matching engine for seamless trades.
-5. **Community Engagement**: Foster a vibrant ecosystem of traders and enthusiasts through interactive features and incentives.
+    subgraph "Account Management"
+        B --> D[Account Binding Service]
+        D --> E[(User Database)]
+    end
 
-## 3. Key Features
+    subgraph "Price Recommendation System"
+        F[iFlow Price API] --> G[Price Calculation Service]
+        G --> H[Recommendation Engine]
+    end
 
-- **Seamless Authentication**: Login via Steam accounts with secure Solana wallet integration (Phantom).
-- **Real-time Inventory Sync**: Direct synchronization with Steam inventories for up-to-date asset management.
-- **Efficient Trade Execution**: Intuitive interface for proposing, accepting, and completing trades with real-time notifications.
-- **Solana-Powered Transactions**: Fast and cost-effective payments using SOL.
-- **Smart Contract Orders**: Utilize Solana to create and manage trade orders and escrow agreements.
-- **Comprehensive User Profiles**: Detailed trading history, wallet balances, and customizable user information.
+    subgraph "Order Processing System"
+        I[Order Service] --> J[Payment Processing]
+        I --> K[Purchase Service]
+        K --> L[Steam Auto-Delivery]
+    end
 
-## 4. Technical Architecture
+    subgraph "Status Tracking"
+        M[Status Manager] --> N[Notification Service]
+        M --> O[(Order Database)]
+    end
 
-### Frontend
-- Framework: React with TypeScript
-- UI Library: Material-UI
-- State Management: Redux or Context API
+    B --> I
+    H --> I
+    K --> M
+```
 
-### Backend
-- Runtime: Node.js with Express
-- Database: MongoDB for flexible data storage
-- Caching: Redis for improved performance
+## 📊 Trade Flow Management
 
-### Blockchain Integration
-- Network: Solana
-- Smart Contracts: Anchor framework
-- Wallet Support: Phantom
+```mermaid
+stateDiagram-v2
+    [*] --> OrderCreated: User Initiates Purchase
+    OrderCreated --> PaymentPending: Awaiting SOL Payment
+    PaymentPending --> PaymentConfirmed: SOL Transaction Confirmed
+    PaymentPending --> PaymentFailed: Payment Timeout/Failed
+    PaymentFailed --> [*]
+    
+    PaymentConfirmed --> SteamOfferPending: Creating Steam Trade Request
+    SteamOfferPending --> SteamOfferSent: Trade Invitation Sent
+    SteamOfferSent --> SteamOfferAccepted: Buyer Accepts Trade
+    SteamOfferSent --> SteamOfferExpired: Trade Timeout(15min)
+    SteamOfferExpired --> RefundInitiated: Initiate Refund
+    
+    SteamOfferAccepted --> SteamHoldPending: Steam Trade Hold
+    SteamHoldPending --> TradeCompleted: Trade Completed
+    
+    RefundInitiated --> RefundCompleted: Refund Processed
+    RefundCompleted --> [*]
+    TradeCompleted --> [*]
+```
 
-### API Integrations
-- Steam API: User authentication and inventory management
-- Solana RPC Nodes: Direct blockchain interaction
-- Custom RESTful APIs: Trade management, user data, and platform-specific operations
+## 🛠️ Technical Implementation
 
-## 5. Security Measures
+### 1. Smart Contract System
 
-- **Smart Contract Audits**: Regular third-party audits of all blockchain interactions.
-- **Escrow System**: Secure holding of assets during trades to prevent fraud.
-- **Multi-factor Authentication**: Enhanced account security beyond Steam's built-in measures.
-- **Rate Limiting**: Prevention of API abuse and potential DDoS attacks.
-- **Data Encryption**: End-to-end encryption for all sensitive user data.
+```rust
+#[program]
+pub mod steampipe {
+    pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
+        let user = &mut ctx.accounts.user;
+        user.owner = *ctx.accounts.owner.key;
+        user.steam_id = String::new();
+        user.steam_linked = false;
+        user.trades_count = 0;
+        Ok(())
+    }
 
-## 6. Business Model
+    pub fn create_listing(
+        ctx: Context<CreateListing>,
+        item_id: String,
+        price: u64,
+        item_name: String,
+    ) -> Result<()> {
+        let listing = &mut ctx.accounts.listing;
+        listing.seller = *ctx.accounts.user.key;
+        listing.item_id = item_id;
+        listing.price = price;
+        listing.state = ListingState::Active;
+        Ok(())
+    }
 
-SteamPipe operates on a transaction fee model:
-- 2% - 3.5% fee on each successful trade
-- Fees are calculated based on the value of items traded
-- Competitive pricing strategy to attract and retain users
+    // Additional contract functions...
+}
+```
 
-## 7. Roadmap
+### 2. Price Recommendation Engine
 
-### Phase 1: Development (Q3-Q4 2024)
-- Core smart contract development
-- Basic frontend and backend implementation
-- Steam API integration
-- Internal testing and debugging
+```typescript
+class PriceRecommendationService {
+    private readonly iFlowAPI: IFlowAPI;
+    private readonly aiAgent: SolanaAgentKit;
 
-### Phase 2: Testing and Refinement (Q1 2025)
-- Security audits and optimizations
-- Closed beta with selected users
-- Feedback collection and implementation
+    async getRecommendedPrice(itemId: string): Promise<PriceRecommendation> {
+        const historicalData = await this.iFlowAPI.getHistoricalPrices(itemId);
+        const marketTrends = await this.iFlowAPI.getMarketTrends();
+        
+        return this.aiAgent.analyzePriceData({
+            historicalData,
+            marketTrends,
+            recentTrades: await this.getRecentTrades(itemId)
+        });
+    }
+}
+```
 
-### Phase 3: Launch (Q2 2025)
-- Official platform launch
-- Marketing campaigns and user acquisition
-- Continuous feature updates based on user feedback
+### 3. Trade Processing System
 
-### Phase 4: Expansion (Q3-Q4 2025)
-- Enhanced analytics features
-- Exploration of additional game inventory integrations
-- Continued platform optimization and feature development
+```typescript
+class TradeProcessor {
+    async processTrade(order: Order): Promise<TradeResult> {
+        // 1. Validate Order
+        await this.validateOrder(order);
 
-## 8. Risk Management
+        // 2. Create Escrow
+        const escrow = await this.solanaService.createEscrow(order);
 
-- **Regulatory Compliance**: Ongoing legal consultation to navigate evolving crypto regulations.
-- **Liquidity Management**: Strategies to ensure robust trading volumes.
-- **Technical Redundancy**: Multiple failsafes and backup systems to prevent service interruptions.
-- **Community Trust**: Transparent communication and regular security updates to maintain user confidence.
+        // 3. Process Steam Trade
+        const steamTrade = await this.steamService.createTradeOffer({
+            partnerId: order.buyerId,
+            items: order.items,
+            tradeToken: order.tradeToken
+        });
 
-## 9. Getting Started
+        // 4. Monitor Trade Status
+        return this.monitorTradeCompletion(steamTrade.id, escrow.id);
+    }
+}
+```
 
-### Prerequisites
-- Node.js (v14 or later)
-- Yarn or npm
-- Solana CLI tools
-- Anchor framework
+## 🔒 Security Architecture
 
-### Installation
-1. Clone the repository:
+### 1. Steam API Protection
+```typescript
+class SteamSecurityService {
+    private readonly rateLimiter: RateLimiter;
+    private readonly apiKeyManager: APIKeyManager;
+
+    constructor() {
+        // Implement rate limiting per API key
+        this.rateLimiter = new RateLimiter({
+            windowMs: 15 * 60 * 1000, // 15 minutes
+            max: 100 // limit each IP to 100 requests per windowMs
+        });
+
+        // Rotate API keys periodically
+        this.apiKeyManager = new APIKeyManager({
+            rotationInterval: 24 * 60 * 60 * 1000, // 24 hours
+            maxRequestsPerKey: 10000
+        });
+    }
+
+    async validateTradeRequest(tradeRequest: TradeRequest): Promise<boolean> {
+        // Implement multiple validation layers
+        await this.validateSteamGuard(tradeRequest.steamGuard);
+        await this.validateTradeUrl(tradeRequest.tradeUrl);
+        await this.validateItemOwnership(tradeRequest.items);
+        return true;
+    }
+}
+```
+
+### 2. Fraud Prevention System
+```typescript
+class FraudDetectionService {
+    async analyzeTransaction(trade: Trade): Promise<RiskScore> {
+        const riskFactors = await Promise.all([
+            this.checkPriceManipulation(trade.price),
+            this.checkUserHistory(trade.userId),
+            this.checkItemProvenance(trade.itemId),
+            this.checkTradePattern(trade.pattern)
+        ]);
+
+        return this.calculateRiskScore(riskFactors);
+    }
+
+    private async checkPriceManipulation(price: number): Promise<RiskFactor> {
+        // Compare with historical data and market averages
+        const marketPrice = await this.getPriceData(price);
+        const deviation = Math.abs(price - marketPrice.average);
+        
+        return {
+            risk: deviation > marketPrice.standardDeviation * 2 ? 'HIGH' : 'LOW',
+            factor: 'PRICE_MANIPULATION'
+        };
+    }
+}
+```
+
+### 3. Multi-Layer Trade Verification
+- **Steam Guard Authentication**
+  - Mobile authenticator verification
+  - Device fingerprinting
+  - Login pattern analysis
+
+- **Solana Transaction Security**
+  ```typescript
+  class TransactionVerifier {
+      async verifyTransaction(tx: Transaction): Promise<boolean> {
+          // Verify signatures
+          await this.verifySignatures(tx.signatures);
+          
+          // Verify account ownership
+          await this.verifyAccountOwnership(tx.accounts);
+          
+          // Check transaction limits
+          await this.checkTransactionLimits(tx.amount);
+          
+          return true;
+      }
+  }
+  ```
+
+### 4. Automated Safety Systems
+
+1. **Real-time Monitoring**
+   ```typescript
+   interface MonitoringMetrics {
+       tradeVolume: number;
+       uniqueUsers: number;
+       failedAttempts: number;
+       averagePrice: number;
+       suspiciousActivities: Activity[];
+   }
    ```
-   git clone https://github.com/your-username/steampipe.git
+
+2. **Risk Management**
+   - Trade value limits
+   - Account age requirements
+   - Trading velocity checks
+   - IP geolocation verification
+
+3. **Account Protection**
+   ```typescript
+   interface AccountSecurity {
+       steamGuardEnabled: boolean;
+       lastLoginIP: string;
+       loginHistory: LoginRecord[];
+       tradeURLs: string[];
+       apiKeyUsage: APIKeyMetrics;
+   }
    ```
-2. Install dependencies:
+
+### 5. Emergency Response System
+
+```typescript
+class EmergencyHandler {
+    async handleSecurityBreach(incident: SecurityIncident): Promise<void> {
+        // 1. Freeze affected accounts
+        await this.freezeAccounts(incident.affectedAccounts);
+        
+        // 2. Reverse recent transactions
+        await this.reverseRecentTransactions(incident.timeFrame);
+        
+        // 3. Notify affected users
+        await this.notifyUsers(incident.affectedUsers);
+        
+        // 4. Generate incident report
+        await this.generateReport(incident);
+    }
+}
+```
+
+### 6. Regular Security Audits
+
+1. **Smart Contract Audits**
+   - Regular code reviews
+   - Vulnerability assessments
+   - Penetration testing
+
+2. **API Security Reviews**
+   - Rate limiting effectiveness
+   - Authentication mechanisms
+   - Access pattern analysis
+
+3. **User Behavior Analysis**
+   ```typescript
+   interface UserBehaviorMetrics {
+       tradingPattern: Pattern;
+       loginLocations: Location[];
+       deviceFingerprints: string[];
+       riskScore: number;
+   }
    ```
-   cd steampipe
-   yarn install
-   ```
-3. Set up environment variables (copy `.env.example` to `.env` and fill in the required values)
 
-4. Run the development server:
-   ```
-   yarn dev
-   ```
+## 💫 Key Features
 
-For more detailed instructions, please refer to our [Development Guide](docs/development-guide.md).
+### 1. AI-Powered Trading
+- Market trend analysis
+- Price prediction models
+- Risk assessment
+- Fraud detection
 
-## 10. Contributing
+### 2. Automated Trade Execution
+- Smart contract-based escrow
+- Instant settlements
+- Error recovery
+- Status tracking
 
-We welcome contributions from the community! If you'd like to contribute, please follow these steps:
+### 3. User Protection
+- Price verification
+- Trade guarantees
+- Dispute resolution
+- Anti-scam measures
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 🚗 Development Roadmap
 
-Please make sure to update tests as appropriate and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+### Phase 1 (Completed)
+- ✅ Smart contract development
+- ✅ Steam integration
+- ✅ Basic trading system
+- ✅ Price tracking
 
-## 11. Contact
+### Phase 2 (Current)
+- 🔄 AI integration
+- 🔄 Advanced price predictions
+- 🔄 Automated trading
+- 🔄 Enhanced security
 
-For any inquiries or support, please open an issue on this repository or contact us at support@steampipe.io.
+### Phase 3 (Planned)
+- ⏳ Mobile app
+- ⏳ Advanced analytics
+- ⏳ Additional game support
+- ⏳ Community features
 
-## 12. Conclusion
+## 🏗️ Quick Start
 
-SteamPipe represents the future of CS2 skin trading, offering a secure, efficient, and user-friendly platform that leverages the best of blockchain technology. By addressing the pain points of traditional trading methods and introducing smart contract-based trading, we're not just creating a marketplace – we're building the foundation for the future of digital asset trading in gaming.
+1. **Installation**
+```bash
+git clone https://github.com/yourusername/steampipe.git
+cd steampipe
+npm install
+```
 
-Join us in revolutionizing the world of CS2 skin trading with SteamPipe.
+2. **Environment Setup**
+```bash
+# .env configuration
+SOLANA_PRIVATE_KEY=xxx
+STEAM_API_KEY=xxx
+IFLOW_API_KEY=xxx
+OPENAI_API_KEY=xxx
+```
+
+3. **Smart Contract Deployment**
+```bash
+anchor build
+anchor deploy
+```
+
+4. **Run Development Server**
+```bash
+npm run dev
+```
+
+## 💻 API Examples
+
+### Create Trade Order
+```typescript
+const order = await tradeService.createOrder({
+    itemId: "AWP_Dragon_Lore",
+    price: 1000,
+    useAIPricing: true
+});
+```
+
+### Monitor Trade Status
+```typescript
+const status = await tradeService.getTradeStatus(tradeId);
+console.log(`Trade Status: ${status.state}`);
+console.log(`Escrow Status: ${status.escrowState}`);
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
